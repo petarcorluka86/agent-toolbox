@@ -18,4 +18,7 @@ This is built for my own needs, but feel free to use anything here.
 
 ## What's inside
 
-- `commands/` — reusable commands for Claude Code (PR creation, code review, etc.)
+### Commands
+
+- **ad-hoc-pr** — Creates a new YouTrack ticket and a GitHub PR linked to it. Gathers context from your branch, proposes ticket and PR details for approval, then creates both automatically.
+- **review-pr** — Reviews a PR where you're requested as a reviewer. Lists pending reviews, analyzes the diff, runs parallel code review checks, and presents findings with a verdict.
