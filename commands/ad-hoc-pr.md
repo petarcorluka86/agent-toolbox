@@ -6,6 +6,10 @@ Create a GitHub Pull Request and a linked YouTrack ticket for the current branch
 
 ## Steps
 
+### 0. Load environment
+
+Find and source the `.env` file located at the root of this toolkit (one directory up from `commands/`). Prefix every subsequent bash command with `source <path-to-.env> &&` so the variables are available.
+
 ### 1. Gather context
 
 - Run `git log $(git merge-base HEAD master)..HEAD --oneline` to get all commits on this branch.

@@ -11,6 +11,10 @@ Review a pull request where you are requested as a reviewer. Combines branch-lev
 
 ## Steps
 
+### 0. Load environment
+
+Find and source the `.env` file located at the root of this toolkit (one directory up from `commands/`). Prefix every subsequent bash command with `source <path-to-.env> &&` so the variables are available.
+
 ### 1. Find PRs to review
 
 If `$ARGUMENTS` is empty, list PRs where the user is requested as a reviewer.

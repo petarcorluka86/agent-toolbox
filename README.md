@@ -6,16 +6,13 @@
 
 ## ⚙️ Setup
 
-1. Copy `.env.example` to `.env` and fill in your values:
+Copy `.env.example` to `.env` and fill in your values:
 
-   ```bash
-   cp .env.example .env
-   ```
+```bash
+cp .env.example .env
+```
 
-2. Source it from your shell config (e.g. `.zshrc`):
-   ```bash
-   [ -f ~/path/to/agent-toolkit/.env ] && source ~/path/to/agent-toolkit/.env
-   ```
+Commands automatically source the `.env` file at runtime — no shell configuration needed.
 
 ---
 
