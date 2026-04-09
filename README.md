@@ -6,13 +6,13 @@
 
 ## ⚙️ Setup
 
-Copy `.env.example` to `.env` and fill in your values:
+Copy `.env.example` to `.env` inside the `commands/` folder and fill in your values:
 
 ```bash
-cp .env.example .env
+cp commands/.env.example commands/.env
 ```
 
-Commands automatically source the `.env` file at runtime — no shell configuration needed.
+Commands automatically source `commands/.env` at runtime — no shell configuration needed.
 
 ---
 

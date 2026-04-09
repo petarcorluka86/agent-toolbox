@@ -8,7 +8,7 @@ Create a GitHub Pull Request and a linked YouTrack ticket for the current branch
 
 ### 0. Load environment
 
-Find and source the `.env` file located at the root of this toolkit (one directory up from `commands/`). Prefix every subsequent bash command with `source <path-to-.env> &&` so the variables are available.
+Source `commands/.env` (located in the same directory as this command). Prefix every subsequent bash command with `source <path-to-.env> &&` so the variables are available.
 
 ### 1. Gather context
 
