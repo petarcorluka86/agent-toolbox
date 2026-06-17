@@ -31,8 +31,8 @@ If the changes are straightforward and self-explanatory (e.g., a clear refactor,
 
 Based on the context gathered (and user's explanation if asked), propose:
 
-- **YouTrack ticket title** — must start with `[$GH_ORG]` prefix. Use the `$ARGUMENTS` hint if provided, otherwise derive from the changes.
-- **YouTrack ticket description** — QA-oriented. Explain: what the problem was, what the expected behavior should be, and how to verify the fix. This is for QA testers, not developers.
+- **YouTrack ticket title** — must start with `[ApplicationName/PackageName] [ModuleName]` prefix. Infer both from the diff and folder structure. If you cannot confidently determine either, ask the user. Use the `$ARGUMENTS` hint if provided, otherwise derive from the changes. Be direct and specific — no filler words.
+- **YouTrack ticket description** — QA-oriented. Explain: what the problem was, what the expected behavior should be, and how to verify the fix. This is for QA testers, not developers. Write in plain, clear language — no filler text, no padding, easy to skim.
 
 Present these to the user and **ask for confirmation or edits**. Do NOT proceed until approved.
 
@@ -40,8 +40,8 @@ Present these to the user and **ask for confirmation or edits**. Do NOT proceed 
 
 Once the YouTrack content is approved, propose:
 
-- **PR title** — concise and descriptive, starts with `[$GH_ORG]`.
-- **"What's new" section** — a bulleted summary of the code changes (developer-oriented).
+- **PR title** — concise and descriptive, starts with `[Application/PackageName] [ModuleName]`. Use the same prefix inferred in step 3.
+- **"What's new" section** — a bulleted summary of the code changes (developer-oriented). Write in plain, clear language — no filler text, no padding, easy to skim.
 
 Present these to the user and **ask for confirmation or edits**. Do NOT proceed until approved.
 
