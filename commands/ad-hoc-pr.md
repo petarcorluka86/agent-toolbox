@@ -1,3 +1,8 @@
+---
+allowed-tools: Bash(source *), Bash(git *), Bash(gh *), Bash(curl *), Read, Grep, Glob
+description: Create a GitHub PR and a linked YouTrack ticket for the current branch
+---
+
 Create a GitHub Pull Request and a linked YouTrack ticket for the current branch.
 
 ## Inputs
