@@ -37,6 +37,7 @@ The command files reference this toolbox by absolute path (`/Users/petarcorluka/
 | **`review‑pr`** | Reviews a PR where you're requested as a reviewer. Lists pending reviews, analyzes the diff, runs parallel code review checks, and presents findings with a verdict. |
 | **`review‑branch`** | First-principles audit of the current branch against the repo's default branch. Runs parallel agents across DRY, simplicity/performance, UX, clean code, and i18n — questioning the approach, not just hunting bugs — and ends with a ship/rethink verdict. |
 | **`iterate‑items`** | Walks through a list from the previous turn (audit findings, plan steps, review issues) one item at a time, proposing an action for each and waiting for your go-ahead before acting. |
+| **`polish‑comments`** | Reviews the comments the current branch adds vs the default branch, deletes the ones that restate what the code already says, and rewrites the useful ones to be direct and minimal. Comments only — never touches executable code or pre-existing comments. |
 | **`worktree`** | Creates a git worktree for a branch (creating the branch off the default branch if it doesn't exist), installs dependencies with the repo's package manager, and opens it in a new Cursor window with an auto-focused terminal. Run from inside the target repo: `/worktree my-branch`. |
 
 ### Scripts
