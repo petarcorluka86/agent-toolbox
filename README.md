@@ -33,6 +33,7 @@ The command files reference this toolbox by absolute path (`/Users/petarcorluka/
 | Command | Description |
 | --- | --- |
 | **`ad‑hoc‑pr`** | Creates a new YouTrack ticket and a GitHub PR linked to it. Gathers context from your branch, proposes ticket and PR details for approval, then creates both via `scripts/create-ticket-and-pr.sh`. |
+| **`update‑pr`** | Updates the description of the open PR for the current branch to match its current code changes — for when you've pushed more work after opening the PR. Reads the full diff and existing body, proposes an updated "What's new" section for approval (preserving the YouTrack/Staging headers), then edits the PR via `scripts/update-pr-body.sh`. |
 | **`review‑pr`** | Reviews a PR where you're requested as a reviewer. Lists pending reviews, analyzes the diff, runs parallel code review checks, and presents findings with a verdict. |
 | **`review‑branch`** | First-principles audit of the current branch against the repo's default branch. Runs parallel agents across DRY, simplicity/performance, UX, clean code, and i18n — questioning the approach, not just hunting bugs — and ends with a ship/rethink verdict. |
 | **`iterate‑items`** | Walks through a list from the previous turn (audit findings, plan steps, review issues) one item at a time, proposing an action for each and waiting for your go-ahead before acting. |
@@ -46,5 +47,6 @@ Deterministic helpers in `commands/scripts/` that commands delegate to for speed
 | --- | --- | --- |
 | **`worktree.sh`** | `worktree` | End-to-end worktree creation, dep install, tasks.json, and Cursor launch. |
 | **`create-ticket-and-pr.sh`** | `ad-hoc-pr` | Creates + assigns the YouTrack ticket and opens the PR, with safe `jq`-built payloads. |
+| **`update-pr-body.sh`** | `update-pr` | Verifies the branch's open PR exists, then replaces its body from a file via `gh pr edit`. |
 | **`_default_branch.sh`** | several | Detects the repo's default branch (no hardcoded `master`). |
 | **`_env.sh`** | scripts | Sources `commands/.env` regardless of the caller's cwd. |
