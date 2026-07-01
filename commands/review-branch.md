@@ -1,31 +1,37 @@
 ---
-allowed-tools: Bash(git *), Agent, Read, Grep, Glob
-description: First-principles audit of the current branch against origin/master
+allowed-tools: Bash(bash *), Bash(git *), Agent, Read, Grep, Glob
+description: First-principles audit of the current branch against the repo's default branch
 ---
 
-Compare the current branch to `origin/master` and conduct a **First Principles** audit of all changes. Do not just look for bugs — question the entire approach.
+Compare the current branch to the repo's default branch and conduct a **First Principles** audit of all changes. Do not just look for bugs — question the entire approach.
 
 ## Steps
 
 ### 1. Gather diff context
 
-Run in parallel:
+First detect the default branch (don't assume `master`):
 
 ```bash
-git fetch origin master --quiet
+BASE="$(bash /Users/petarcorluka/RemoteConfig/agent-toolbox/commands/scripts/_default_branch.sh)"
+```
+
+Then run:
+
+```bash
+git fetch origin "$BASE" --quiet
 git rev-parse --abbrev-ref HEAD
-git log --oneline origin/master..HEAD
-git diff origin/master...HEAD --stat
-git diff origin/master...HEAD --name-only
+git log --oneline "origin/$BASE"..HEAD
+git diff "origin/$BASE"...HEAD --stat
+git diff "origin/$BASE"...HEAD --name-only
 ```
 
 Then capture the full diff for review:
 
 ```bash
-git diff origin/master...HEAD
+git diff "origin/$BASE"...HEAD
 ```
 
-If there are no changes vs `origin/master`, stop and tell the user.
+If there are no changes vs `origin/$BASE`, stop and tell the user.
 
 ### 2. Read project conventions
 

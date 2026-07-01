@@ -1,9 +1,11 @@
 ---
-allowed-tools: Bash(source *), Bash(git *), Bash(gh *), Bash(curl *), Read, Grep, Glob
+allowed-tools: Bash(bash *), Bash(git *), Read, Write, Grep, Glob
 description: Create a GitHub PR and a linked YouTrack ticket for the current branch
 ---
 
 Create a GitHub Pull Request and a linked YouTrack ticket for the current branch.
+
+Prerequisites: `jq` and `gh` (authenticated — `brew install gh && gh auth login`). The creation script (step 5) sources `commands/.env` on its own, so you don't need to source it manually.
 
 ## Inputs
 
@@ -11,14 +13,11 @@ Create a GitHub Pull Request and a linked YouTrack ticket for the current branch
 
 ## Steps
 
-### 0. Load environment
-
-Source `commands/.env` (located in the same directory as this command). Prefix every subsequent bash command with `source <path-to-.env> &&` so the variables are available.
-
 ### 1. Gather context
 
-- Run `git log $(git merge-base HEAD master)..HEAD --oneline` to get all commits on this branch.
-- Run `git diff master...HEAD` to see the full diff.
+- Determine the default branch: `bash /Users/petarcorluka/RemoteConfig/agent-toolbox/commands/scripts/_default_branch.sh` (call it `<BASE>`).
+- Run `git log $(git merge-base HEAD <BASE>)..HEAD --oneline` to get all commits on this branch.
+- Run `git diff <BASE>...HEAD` to see the full diff.
 - Run `git branch --show-current` to get the current branch name.
 
 ### 2. Clarify the problem (if needed)
@@ -50,67 +49,28 @@ Once the YouTrack content is approved, propose:
 
 Present these to the user and **ask for confirmation or edits**. Do NOT proceed until approved.
 
-### 5. Build the staging link
+### 5. Create everything via the script
 
-Construct the staging URL from the branch name:
+Once **both** the ticket content (step 3) and the PR content (step 4) are approved, hand the approved text to the deterministic script. It creates the YouTrack ticket (with a safely-built JSON payload), assigns it to you, pushes the branch, and opens the linked PR against the repo's detected default branch.
 
-```
-https://<branch-name>.$STAGING_DOMAIN
-```
-
-### 6. Create the YouTrack ticket
-
-Once the user approves, create a YouTrack issue via the REST API:
+Because multi-line content with quotes/newlines breaks inline shell quoting, **write the approved description and PR "What's new" bullets to files** (use the scratchpad dir), then pass file paths:
 
 ```bash
-curl -s -X POST "$YOUTRACK_URL/api/issues?fields=id,idReadable" \
-  -H "Authorization: Bearer $YOUTRACK_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "project": {"id": "'"$YOUTRACK_PROJECT_ID"'"},
-    "summary": "<APPROVED_TICKET_TITLE>",
-    "description": "<APPROVED_QA_DESCRIPTION>",
-    "customFields": [{"name": "Type", "$type": "SingleEnumIssueCustomField", "value": {"name": "Task", "id": "'"$YOUTRACK_TASK_TYPE_ID"'"}}],
-    "tags": [{"id": "'"$YOUTRACK_TAG_ID"'", "name": "'"$YOUTRACK_TAG_NAME"'"}]
-  }'
+# 1. Write approved content to temp files (use the Write tool, not echo).
+#    - <SCRATCH>/ticket-desc.md  → the approved QA description
+#    - <SCRATCH>/pr-body.md      → the approved "What's new" bullets (markdown list)
+
+# 2. Run the script from inside the repo:
+bash /Users/petarcorluka/RemoteConfig/agent-toolbox/commands/scripts/create-ticket-and-pr.sh \
+  "<CURRENT_BRANCH>" \
+  "<APPROVED_TICKET_TITLE>" \
+  "<SCRATCH>/ticket-desc.md" \
+  "<APPROVED_PR_TITLE>" \
+  "<SCRATCH>/pr-body.md"
 ```
 
-Extract the `idReadable` (e.g., `ZETA-1234`) from the response.
+The script sources `commands/.env` itself and requires `jq` and `gh` (authenticated). If it exits non-zero, relay its error output to the user and stop — do not retry blindly.
 
-Then assign it to the current user:
+### 6. Output
 
-```bash
-curl -s -X POST "$YOUTRACK_URL/api/commands" \
-  -H "Authorization: Bearer $YOUTRACK_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "issues": [{"idReadable": "<ISSUE_ID>"}],
-    "query": "for '"$YOUTRACK_USERNAME"'"
-  }'
-```
-
-### 7. Create the GitHub PR
-
-Use `gh pr create` with the repo's PR template format:
-
-```
-### :notebook: [YouTrack]($YOUTRACK_URL/issue/<ISSUE_ID>)
-
-### :link: [Staging environment](https://<branch-name>.$STAGING_DOMAIN)
-
-## :sparkles: What's new
-
-- <approved "What's new" bullets>
-
-```
-
-- PR title: the approved PR title.
-- Base branch: `master`.
-
-### 8. Output
-
-Print:
-
-- YouTrack ticket URL
-- GitHub PR URL
-- Staging URL
+The script prints the YouTrack ticket URL, the PR URL, and the staging URL. Relay them to the user.

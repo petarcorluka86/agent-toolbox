@@ -45,7 +45,7 @@ gh api graphql -f query='
       }
     }
   }
-}' --jq '[.data.repository.pullRequests.nodes[] | select(.reviewRequests.nodes | map(select(.requestedReviewer.login == "'"$GH_USERNAME"'")) | length > 0) | {number, title, author: .author.login, createdAt, additions, deletions, changedFiles, required: (.reviewRequests.nodes[] | select(.requestedReviewer.login == "'"$GH_USERNAME"'") | .asCodeOwner)}] | sort_by(if .required then 0 else 1 end, .createdAt) | .[]'
+}' --jq '[.data.repository.pullRequests.nodes[] | select(.reviewRequests.nodes | map(select(.requestedReviewer.login == "'"$GH_USERNAME"'")) | length > 0) | {number, title, author: .author.login, createdAt, additions, deletions, changedFiles, required: ([.reviewRequests.nodes[] | select(.requestedReviewer.login == "'"$GH_USERNAME"'") | .asCodeOwner] | any)}] | sort_by(if .required then 0 else 1 end, .createdAt) | .[]'
 ```
 
 Display the results as a table sorted by:
