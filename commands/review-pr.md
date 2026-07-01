@@ -15,7 +15,13 @@ Review a pull request where you are requested as a reviewer. Combines automated 
 
 ### 0. Load environment
 
-Source `commands/.env` (located in the same directory as this command). Prefix every subsequent bash command with `source <path-to-.env> &&` so the variables are available.
+The toolbox config lives at `/Users/petarcorluka/RemoteConfig/agent-toolbox/commands/.env`. Prefix every subsequent bash command that needs config (`$GH_ORG`, `$GH_REPO`, `$GH_USERNAME`, `$YOUTRACK_URL`, `$YOUTRACK_TOKEN`, `$STAGING_DOMAIN`) with:
+
+```bash
+source /Users/petarcorluka/RemoteConfig/agent-toolbox/commands/.env &&
+```
+
+so the variables are available.
 
 ### 1. Find PRs to review
 
@@ -128,7 +134,7 @@ Launch **5 parallel agents**. Each agent prompt must include:
 
 - PR number, branch name, `$GH_ORG/$GH_REPO`
 - The full changed-files list
-- Path to the .env file (so it can `source` it)
+- The .env path `/Users/petarcorluka/RemoteConfig/agent-toolbox/commands/.env` (so it can `source` it) — pass this concrete path as `<ENV_PATH>`, don't leave it as a placeholder
 - Instructions to fetch the diff itself via `gh pr diff <NUMBER>`
 - The confidence rubric and false-positive exclusion list (copy them into each prompt)
 

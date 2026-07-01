@@ -42,7 +42,7 @@ Use Glob to find `CLAUDE.md` files in directories touched by the diff (repo root
 Launch **5 parallel agents**, one per dimension. Each prompt must include:
 
 - Current branch name and the full changed-files list
-- Instructions to run `git diff origin/master...HEAD -- <file>` to read hunks, and `Read` for surrounding context
+- Instructions to run `git diff origin/$BASE...HEAD -- <file>` (substitute the `$BASE` value detected in step 1) to read hunks, and `Read` for surrounding context
 - The relevant CLAUDE.md excerpts so the agent applies the project's conventions
 - An instruction to **question the approach, not just find bugs** — propose alternatives where the current design feels off
 

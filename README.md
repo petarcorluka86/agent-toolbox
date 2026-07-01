@@ -14,6 +14,10 @@ cp commands/.env.example commands/.env
 
 Commands automatically source `commands/.env` at runtime — no shell configuration needed.
 
+### ⚠️ Paths are hardcoded
+
+The command files reference this toolbox by absolute path (`/Users/petarcorluka/RemoteConfig/agent-toolbox/commands/...`) because Claude Code slash commands have no reliable "own directory" variable, and the commands are symlinked into `~/.claude/commands`. **If you relocate the toolbox, find/replace that path across `commands/*.md`.**
+
 ### Prerequisites
 
 - **`jq`** — used by the helper scripts to build/parse JSON.

@@ -33,23 +33,34 @@ command -v gh >/dev/null || { echo "error: gh (GitHub CLI) is required — run '
 
 TICKET_DESC="$(cat "$DESC_FILE")"
 
+# ---- 0. Push the branch first --------------------------------------------
+# Do this before creating the YouTrack ticket: a rejected push (or a branch
+# that already has a PR) must not leave an orphaned ticket behind.
+existing_pr="$(gh pr list --head "$BRANCH" --state open --json url --jq '.[0].url // empty')"
+if [ -n "$existing_pr" ]; then
+  echo "error: an open PR already exists for '$BRANCH': $existing_pr" >&2
+  exit 1
+fi
+git push -u origin "$BRANCH"
+
 # ---- 1. Create the YouTrack issue (payload built safely with jq) ----------
 payload="$(jq -n \
   --arg proj    "$YOUTRACK_PROJECT_ID" \
   --arg summary "$TICKET_TITLE" \
   --arg desc    "$TICKET_DESC" \
-  --arg ttypeid "$YOUTRACK_TASK_TYPE_ID" \
-  --arg tagid   "$YOUTRACK_TAG_ID" \
-  --arg tagname "$YOUTRACK_TAG_NAME" \
+  --arg ttypeid   "$YOUTRACK_TASK_TYPE_ID" \
+  --arg ttypename "$YOUTRACK_TASK_TYPE_NAME" \
+  --arg tagid     "$YOUTRACK_TAG_ID" \
+  --arg tagname   "$YOUTRACK_TAG_NAME" \
   '{
      project: { id: $proj },
      summary: $summary,
      description: $desc,
-     customFields: [ { name: "Type", "$type": "SingleEnumIssueCustomField", value: { name: "Task", id: $ttypeid } } ],
+     customFields: [ { name: "Type", "$type": "SingleEnumIssueCustomField", value: { name: $ttypename, id: $ttypeid } } ],
      tags: [ { id: $tagid, name: $tagname } ]
    }')"
 
-resp="$(curl -s -X POST "$YOUTRACK_URL/api/issues?fields=id,idReadable" \
+resp="$(curl -s --max-time 30 -X POST "$YOUTRACK_URL/api/issues?fields=id,idReadable" \
   -H "Authorization: Bearer $YOUTRACK_TOKEN" \
   -H "Content-Type: application/json" \
   -d "$payload")"
@@ -65,11 +76,15 @@ echo "created YouTrack issue: $ISSUE_ID"
 # ---- 2. Assign it to the current user -------------------------------------
 assign_payload="$(jq -n --arg id "$ISSUE_ID" --arg u "$YOUTRACK_USERNAME" \
   '{ issues: [ { idReadable: $id } ], query: ("for " + $u) }')"
-curl -s -X POST "$YOUTRACK_URL/api/commands" \
+assign_resp="$(curl -s --max-time 30 -X POST "$YOUTRACK_URL/api/commands" \
   -H "Authorization: Bearer $YOUTRACK_TOKEN" \
   -H "Content-Type: application/json" \
-  -d "$assign_payload" >/dev/null
-echo "assigned $ISSUE_ID to $YOUTRACK_USERNAME"
+  -d "$assign_payload")"
+if printf '%s' "$assign_resp" | jq -e '.error // .error_description' >/dev/null 2>&1; then
+  echo "warning: could not assign $ISSUE_ID to $YOUTRACK_USERNAME — assign it manually" >&2
+else
+  echo "assigned $ISSUE_ID to $YOUTRACK_USERNAME"
+fi
 
 # ---- 3. Build the PR body -------------------------------------------------
 STAGING_URL="https://$BRANCH.$STAGING_DOMAIN"
@@ -85,8 +100,7 @@ trap 'rm -f "$pr_body_file"' EXIT
   printf '\n'
 } > "$pr_body_file"
 
-# ---- 4. Push the branch and open the PR -----------------------------------
-git push -u origin "$BRANCH"
+# ---- 4. Open the PR (branch was pushed in step 0) -------------------------
 PR_URL="$(gh pr create --title "$PR_TITLE" --base "$DEFAULT_BRANCH" --head "$BRANCH" --body-file "$pr_body_file")"
 
 # ---- 5. Output ------------------------------------------------------------

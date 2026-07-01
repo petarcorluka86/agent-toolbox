@@ -28,6 +28,7 @@ WORKTREE_DIR="$PARENT_DIR/$REPO_NAME.worktrees/$BRANCH"
 git worktree prune
 
 MODE=""
+KIND=""
 if git worktree list --porcelain | grep -qxF "worktree $WORKTREE_DIR"; then
   MODE="reused existing worktree"
   echo "worktree already exists at $WORKTREE_DIR — reopening"
@@ -36,28 +37,28 @@ else
   git fetch origin "$DEFAULT_BRANCH" --quiet || true
 
   if git show-ref --verify --quiet "refs/heads/$BRANCH"; then
+    KIND=local
     MODE="attached existing local branch '$BRANCH'"
     git worktree add "$WORKTREE_DIR" "$BRANCH"
   elif git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
+    KIND=remote
     MODE="checked out remote branch '$BRANCH'"
     git fetch origin "$BRANCH" --quiet
     git worktree add --track -b "$BRANCH" "$WORKTREE_DIR" "origin/$BRANCH"
   else
+    KIND=new
     MODE="created new branch '$BRANCH' off '$DEFAULT_BRANCH'"
     git worktree add -b "$BRANCH" "$WORKTREE_DIR" "origin/$DEFAULT_BRANCH"
   fi
 
-  # Pull latest for branches that exist on origin (ff-only, never merge/force).
-  case "$MODE" in
-    "created new branch"*) : ;;  # already based on fresh origin/<default>
-    *)
-      if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
-        if ! git -C "$WORKTREE_DIR" pull --ff-only origin "$BRANCH"; then
-          echo "warning: '$BRANCH' diverged from origin — could not fast-forward; resolve it in the new window" >&2
-        fi
-      fi
-      ;;
-  esac
+  # Only a pre-existing local branch can be stale vs origin. The remote/new
+  # cases were just built from a freshly-fetched tip, so skip the extra network
+  # round-trip. Fast-forward only — never merge/force.
+  if [ "$KIND" = local ] && git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
+    if ! git -C "$WORKTREE_DIR" pull --ff-only origin "$BRANCH"; then
+      echo "warning: '$BRANCH' diverged from origin — could not fast-forward; resolve it in the new window" >&2
+    fi
+  fi
 fi
 
 # ---- Install dependencies -------------------------------------------------
