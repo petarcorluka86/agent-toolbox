@@ -12,7 +12,7 @@ Compare the current branch to the repo's default branch and conduct a **First Pr
 First detect the default branch (don't assume `master`):
 
 ```bash
-BASE="$(bash /Users/petarcorluka/RemoteConfig/agent-toolbox/commands/scripts/_default_branch.sh)"
+BASE="$(bash ~/RemoteConfig/agent-toolbox/commands/scripts/_default_branch.sh)"
 ```
 
 Then run:

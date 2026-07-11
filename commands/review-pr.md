@@ -15,10 +15,10 @@ Review a pull request where you are requested as a reviewer. Combines automated 
 
 ### 0. Load environment
 
-The toolbox config lives at `/Users/petarcorluka/RemoteConfig/agent-toolbox/commands/.env`. Prefix every subsequent bash command that needs config (`$GH_ORG`, `$GH_REPO`, `$GH_USERNAME`, `$YOUTRACK_URL`, `$YOUTRACK_TOKEN`, `$STAGING_DOMAIN`) with:
+The toolbox config lives at `~/RemoteConfig/agent-toolbox/commands/.env`. Prefix every subsequent bash command that needs config (`$GH_ORG`, `$GH_REPO`, `$GH_USERNAME`, `$YOUTRACK_URL`, `$YOUTRACK_TOKEN`, `$STAGING_DOMAIN`) with:
 
 ```bash
-source /Users/petarcorluka/RemoteConfig/agent-toolbox/commands/.env &&
+source ~/RemoteConfig/agent-toolbox/commands/.env &&
 ```
 
 so the variables are available.
@@ -90,12 +90,13 @@ Then:
 - Read the PR description.
 - Note **CI status**: if any checks are failing, flag this prominently at the top of the review.
 - Note **existing reviews**: summarize who already reviewed, their verdict, and key points. Avoid duplicating their feedback later.
-- Look for linked **YouTrack tickets** (e.g. `$YOUTRACK_URL/issue/ZETA-1234`). For each, fetch:
+- **YouTrack and staging are optional.** Run `bash ~/RemoteConfig/agent-toolbox/commands/scripts/config-status.sh` — it prints `youtrack=on|off` and `staging=on|off`. Skip either bullet below when its integration is `off`; don't mention it in the review and don't warn about it.
+- If `youtrack=on`: look for linked **YouTrack tickets** (e.g. `$YOUTRACK_URL/issue/ZETA-1234`). For each, fetch:
   ```bash
   curl -s "$YOUTRACK_URL/api/issues/<ISSUE_ID>?fields=summary,description" \
     -H "Authorization: Bearer $YOUTRACK_TOKEN"
   ```
-- Construct the **staging URL**: `https://<headRefName>.$STAGING_DOMAIN`
+- If `staging=on`: construct the **staging URL**: `https://<headRefName>.$STAGING_DOMAIN`
 
 ### 3. Gather code context
 
@@ -122,7 +123,7 @@ Present:
 - **Purpose**: What is the goal? Derive from description, commits, ticket, and diff.
 - **Scope**: Which apps/packages are affected? List key files/modules.
 - **Changes**: Bulleted summary of what was done (developer-oriented, not line-by-line).
-- **Staging**: `https://<branch>.$STAGING_DOMAIN`
+- **Staging**: `https://<branch>.$STAGING_DOMAIN` — omit this line entirely if `staging=off`.
 - **CI status**: Pass/fail summary. If failing, list which checks.
 - **Existing reviews**: Summary of previous feedback, if any.
 
@@ -134,7 +135,7 @@ Launch **5 parallel agents**. Each agent prompt must include:
 
 - PR number, branch name, `$GH_ORG/$GH_REPO`
 - The full changed-files list
-- The .env path `/Users/petarcorluka/RemoteConfig/agent-toolbox/commands/.env` (so it can `source` it) — pass this concrete path as `<ENV_PATH>`, don't leave it as a placeholder
+- The .env path `~/RemoteConfig/agent-toolbox/commands/.env` (so it can `source` it) — pass this concrete path as `<ENV_PATH>`, don't leave it as a placeholder
 - Instructions to fetch the diff itself via `gh pr diff <NUMBER>`
 - The confidence rubric and false-positive exclusion list (copy them into each prompt)
 

@@ -11,7 +11,7 @@ Prerequisites: `gh` (authenticated — `brew install gh && gh auth login`). The 
 
 ### 1. Gather context
 
-- Determine the default branch: `bash /Users/petarcorluka/RemoteConfig/agent-toolbox/commands/scripts/_default_branch.sh` (call it `<BASE>`).
+- Determine the default branch: `bash ~/RemoteConfig/agent-toolbox/commands/scripts/_default_branch.sh` (call it `<BASE>`).
 - Run `git branch --show-current` to get the current branch (call it `<BRANCH>`).
 - Run `git log $(git merge-base HEAD <BASE>)..HEAD --oneline` to get all commits on this branch.
 - Run `git diff <BASE>...HEAD` to see the **full** current diff (the complete state of the branch, not just the latest changes).
@@ -25,10 +25,12 @@ Prerequisites: `gh` (authenticated — `brew install gh && gh auth login`). The 
 
 Compare the existing PR body against the full diff and commits. The goal is to make the **"What's new"** section accurately reflect the entire current state of the branch — add what's now covered, remove what no longer applies, correct anything that drifted.
 
-Preserve the structural header lines the PR was created with (do NOT regenerate or drop them):
+Preserve the structural header lines the PR was created with (do NOT regenerate, drop, or invent them):
 
 - The `### :notebook: [YouTrack](…)` link line.
 - The `### :link: [Staging environment](…)` link line.
+
+Either or both may be **absent** — they're only present if YouTrack / staging were configured when the PR was opened. Keep the ones that are there; never add one that isn't.
 
 Only the content under `## :sparkles: What's new` should change. If the existing body has a different structure (e.g. a hand-written PR not created by `/ad-hoc-pr`), preserve whatever headers/sections exist and update the change summary in place — match the existing format rather than imposing this one.
 
@@ -49,7 +51,7 @@ Because multi-line content with quotes/newlines breaks inline shell quoting, use
 Run from inside the repo:
 
 ```bash
-bash /Users/petarcorluka/RemoteConfig/agent-toolbox/commands/scripts/update-pr-body.sh \
+bash ~/RemoteConfig/agent-toolbox/commands/scripts/update-pr-body.sh \
   "<BRANCH>" \
   "<SCRATCH>/pr-body.md"
 ```

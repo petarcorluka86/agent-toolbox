@@ -104,6 +104,18 @@ else
   TASKMSG="tasks.json already exists and jq is unavailable — left untouched"
 fi
 
+# tasks.json lives inside the repo, so keep it out of `git status`. If the repo
+# already tracks it we can't ignore it — say so, since our merge dirtied it.
+if git -C "$WORKTREE_DIR" ls-files --error-unmatch .vscode/tasks.json >/dev/null 2>&1; then
+  TASKMSG="$TASKMSG (WARNING: .vscode/tasks.json is tracked — don't commit the change)"
+elif ! git -C "$WORKTREE_DIR" check-ignore -q .vscode/tasks.json 2>/dev/null; then
+  # info/exclude is shared across all worktrees of the repo, so this is a one-time write.
+  EXCLUDE="$(git -C "$WORKTREE_DIR" rev-parse --path-format=absolute --git-common-dir)/info/exclude"
+  mkdir -p "$(dirname "$EXCLUDE")"
+  printf '/.vscode/tasks.json\n' >> "$EXCLUDE"
+  TASKMSG="$TASKMSG; git-excluded it"
+fi
+
 # ---- Open in a new Cursor window ------------------------------------------
 if [ -z "${WORKTREE_NO_OPEN:-}" ]; then
   cursor -n "$WORKTREE_DIR"

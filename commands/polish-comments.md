@@ -12,7 +12,7 @@ Review the comments this branch adds or changes versus the repo's default branch
 Detect the default branch (don't assume `master`):
 
 ```bash
-BASE="$(bash /Users/petarcorluka/RemoteConfig/agent-toolbox/commands/scripts/_default_branch.sh)"
+BASE="$(bash ~/RemoteConfig/agent-toolbox/commands/scripts/_default_branch.sh)"
 ```
 
 Then:

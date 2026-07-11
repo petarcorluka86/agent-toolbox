@@ -6,17 +6,32 @@
 
 ## ⚙️ Setup
 
-Copy `.env.example` to `.env` inside the `commands/` folder and fill in your values:
+The toolbox must live at `~/RemoteConfig/agent-toolbox` (see *Paths* below).
+
+**1. Configure.** Copy `.env.example` to `.env` inside `commands/` and fill in your values:
 
 ```bash
 cp commands/.env.example commands/.env
+chmod 600 commands/.env   # it can hold a YouTrack token
 ```
 
-Commands automatically source `commands/.env` at runtime — no shell configuration needed.
+Commands source `commands/.env` at runtime — no shell configuration needed.
 
-### ⚠️ Paths are hardcoded
+Only the **GitHub** vars are required. **YouTrack** and the **staging link** are optional: leave them blank and the commands skip those steps — `ad-hoc-pr` opens a plain PR with no ticket, and `review-pr` doesn't look for linked tickets. Fill them in later to switch the integration on; nothing else needs to change. `scripts/config-status.sh` prints what's currently on.
 
-The command files reference this toolbox by absolute path (`/Users/petarcorluka/RemoteConfig/agent-toolbox/commands/...`) because Claude Code slash commands have no reliable "own directory" variable, and the commands are symlinked into `~/.claude/commands`. **If you relocate the toolbox, find/replace that path across `commands/*.md`.**
+**2. Install.** Symlink the commands into Claude Code so they show up as slash commands:
+
+```bash
+mkdir -p ~/.claude/commands
+for f in ~/RemoteConfig/agent-toolbox/commands/*.md; do
+  ln -sfn "$f" ~/.claude/commands/"$(basename "$f")"
+done
+chmod +x commands/scripts/*.sh
+```
+
+### ⚠️ Paths
+
+Command files reference the toolbox as `~/RemoteConfig/agent-toolbox/commands/...` — Claude Code slash commands have no reliable "own directory" variable, so the path must be written out. It's tilde-relative, so it works for any user, but **the location is fixed: if you move the toolbox, find/replace that path across `commands/*.md`.** (The scripts themselves resolve their own directory and don't need this.)
 
 ### Prerequisites
 
@@ -46,8 +61,9 @@ Deterministic helpers in `commands/scripts/` that commands delegate to for speed
 
 | Script | Used by | Purpose |
 | --- | --- | --- |
-| **`worktree.sh`** | `worktree` | End-to-end worktree creation, dep install, tasks.json, and Cursor launch. |
-| **`create-ticket-and-pr.sh`** | `ad-hoc-pr` | Creates + assigns the YouTrack ticket and opens the PR, with safe `jq`-built payloads. |
+| **`worktree.sh`** | `worktree` | End-to-end worktree creation, dep install, tasks.json (git-excluded so it stays out of `git status`), and Cursor launch. |
+| **`create-ticket-and-pr.sh`** | `ad-hoc-pr` | Creates + assigns the YouTrack ticket and opens the PR, with safe `jq`-built payloads. Deletes the ticket again if the PR fails to open, so a failed run leaves nothing behind. |
 | **`update-pr-body.sh`** | `update-pr` | Verifies the branch's open PR exists, then replaces its body from a file via `gh pr edit`. |
 | **`_default_branch.sh`** | several | Detects the repo's default branch (no hardcoded `master`). |
-| **`_env.sh`** | scripts | Sources `commands/.env` regardless of the caller's cwd. |
+| **`_env.sh`** | scripts | Sources `commands/.env` regardless of the caller's cwd, and exposes `youtrack_configured` / `staging_configured` so callers can skip optional integrations instead of failing. |
+| **`config-status.sh`** | `ad-hoc-pr`, `review-pr` | Prints `youtrack=on\|off` and `staging=on\|off` so a command knows which steps to skip. |

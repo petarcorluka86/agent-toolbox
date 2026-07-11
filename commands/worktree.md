@@ -29,7 +29,7 @@ The script is idempotent (re-running reuses the worktree and reopens it) and nev
 Run it from **inside the target repository** (so git resolves the right repo), passing the branch name:
 
 ```bash
-bash /Users/petarcorluka/RemoteConfig/agent-toolbox/commands/scripts/worktree.sh "<BRANCH_NAME>"
+bash ~/RemoteConfig/agent-toolbox/commands/scripts/worktree.sh "<BRANCH_NAME>"
 ```
 
 - If the user didn't supply a branch, ask first — don't invent one.
