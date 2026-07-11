@@ -54,6 +54,7 @@ Command files reference the toolbox as `~/RemoteConfig/agent-toolbox/commands/..
 | **`iterate‑items`** | Walks through a list from the previous turn (audit findings, plan steps, review issues) one item at a time, proposing an action for each and waiting for your go-ahead before acting. |
 | **`polish‑comments`** | Reviews the comments the current branch adds vs the default branch, deletes the ones that restate what the code already says, and rewrites the useful ones to be direct and minimal. Comments only — never touches executable code or pre-existing comments. |
 | **`worktree`** | Creates a git worktree for a branch (creating the branch off the default branch if it doesn't exist), installs dependencies with the repo's package manager, and opens it in a new Cursor window with an auto-focused terminal. Run from inside the target repo: `/worktree my-branch`. |
+| **`optimize‑agent‑docs`** | Audits every file that feeds an AI agent's context (`CLAUDE.md`, `AGENTS.md`, `.claude/rules/`, `.cursorrules`, Copilot instructions…) and restructures them so agents get better guidance for fewer tokens. Verifies each documented command/path/convention against the actual repo (stale docs are worse than missing ones), cuts what the agent could read for itself, and moves subsystem rules and procedures out of always-loaded context into path-scoped rules and skills. Proposes a plan with a token before/after, then applies on approval. |
 
 ### Scripts
 
@@ -64,6 +65,7 @@ Deterministic helpers in `commands/scripts/` that commands delegate to for speed
 | **`worktree.sh`** | `worktree` | End-to-end worktree creation, dep install, tasks.json (git-excluded so it stays out of `git status`), and Cursor launch. |
 | **`create-ticket-and-pr.sh`** | `ad-hoc-pr` | Creates + assigns the YouTrack ticket and opens the PR, with safe `jq`-built payloads. Deletes the ticket again if the PR fails to open, so a failed run leaves nothing behind. |
 | **`update-pr-body.sh`** | `update-pr` | Verifies the branch's open PR exists, then replaces its body from a file via `gh pr edit`. |
+| **`scan-agent-docs.sh`** | `optimize-agent-docs` | Inventories every agent-context file in the current repo — tokens, and whether each loads **eagerly** (billed every session) or **lazily** (only when relevant). Expands `@import` chains so imported docs are billed to the eager total, since splitting a file into imports saves nothing. |
 | **`_default_branch.sh`** | several | Detects the repo's default branch (no hardcoded `master`). |
 | **`_env.sh`** | scripts | Sources `commands/.env` regardless of the caller's cwd, and exposes `youtrack_configured` / `staging_configured` so callers can skip optional integrations instead of failing. |
 | **`config-status.sh`** | `ad-hoc-pr`, `review-pr` | Prints `youtrack=on\|off` and `staging=on\|off` so a command knows which steps to skip. |
