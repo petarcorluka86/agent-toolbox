@@ -35,7 +35,7 @@ If there are no changes vs `origin/$BASE`, stop and tell the user.
 
 ### 2. Read project conventions
 
-Use Glob to find `CLAUDE.md` files in directories touched by the diff (repo root + each affected app/package). Read them so the audit reflects local conventions (PandaCSS vs Styled Components, i18n setup, import rules, testing requirements, etc.).
+Use Glob to find `CLAUDE.md` files in directories touched by the diff (repo root + each affected app/package). Read them so the audit reflects local conventions (styling approach, i18n setup, import rules, testing requirements, etc.).
 
 ### 3. Parallel first-principles audit
 
@@ -52,9 +52,14 @@ Each agent must report findings as:
 - **Observation**: what was found
 - **Challenge**: the first-principles question — is there a simpler/better way?
 - **Recommendation**: concrete alternative
+- **Confidence**: 0–100
 - **Severity**: 🔴 critical challenge / 🟡 worth rethinking / 🟢 minor
 
-Skip nitpicks a linter/typechecker would catch. Skip pre-existing code the branch did not touch.
+**Shared rubric**: Read `~/RemoteConfig/agent-toolbox/commands/fragments/review-rubric.md` and copy its confidence table (with the >= 75 report threshold) and exclusion list into every agent prompt, extended with these branch-audit exclusions:
+
+- Alternatives that are different but not demonstrably simpler, faster, or more consistent
+
+Being told to challenge the approach is not license to invent challenges — a different approach that isn't clearly better is not a finding.
 
 ---
 
@@ -63,8 +68,8 @@ Skip nitpicks a linter/typechecker would catch. Skip pre-existing code the branc
 Hunt for duplicated logic, styles, or components introduced by this branch. Look for:
 
 - Repeated business logic that could become a shared util/hook
-- Repeated style blocks (PandaCSS recipes, Styled Components) that should be tokens, recipes, or shared components
-- New components that duplicate something already in `@sofascore/design-system`, `@sofascore/ui`, or an existing app component
+- Repeated style blocks that should be tokens, recipes, or shared components in the repo's styling system
+- New components that duplicate something already in the repo's design-system/UI packages (find them via the workspace layout) or an existing app component
 - Copy-pasted handlers, fetchers, or selectors
 
 For each finding, name the existing abstraction it should reuse (or the new abstraction worth extracting) and weigh the cost of extraction vs the duplication.
@@ -82,12 +87,12 @@ For each finding, sketch the simpler alternative and what would be removed.
 
 #### Agent 3 — UX / UI critique
 
-Critique the user flow and visual consistency of the new changes. Look for:
+Critique the user flow of the new changes as far as the code shows it. You are reading code, not pixels — don't speculate about visual appearance. Look for:
 
-- Inconsistencies with patterns used elsewhere in the app (spacing, typography, iconography, motion, focus states)
 - Missing or awkward states: loading, empty, error, disabled, skeleton
-- Accessibility gaps: keyboard nav, focus management, ARIA roles, color contrast, hit-target size
-- User flow friction: extra clicks, unclear affordances, surprising navigation, lack of feedback after actions
+- Accessibility gaps visible in code: keyboard nav, focus management, ARIA roles/labels
+- Flow friction visible in logic: extra confirmation steps, missing feedback after actions, surprising navigation
+- New one-off components/markup where an existing pattern or shared component covers the case — name it
 
 When possible, point to the existing pattern in the codebase that should have been followed.
 

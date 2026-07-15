@@ -114,7 +114,7 @@ gh pr view $PR_NUMBER --json commits --jq '.commits[] | "\(.oid[:8]) \(.messageH
 Also:
 
 - Use Glob + Read to find and read **CLAUDE.md files** in directories modified by the PR (root + app/package-level).
-- Determine which **apps/packages** are affected by looking at file path prefixes (e.g. `apps/sofascore/`, `packages/design-system/`).
+- Determine which **apps/packages** are affected by looking at file path prefixes (e.g. `apps/<app>/`, `packages/<package>/`).
 
 ### 4. Summary & impact assessment
 
@@ -141,25 +141,13 @@ Launch **5 parallel agents**. Each agent prompt must include:
 
 ---
 
-**Confidence scoring** (include in every agent prompt):
+**Shared rubric**: Read `~/RemoteConfig/agent-toolbox/commands/fragments/review-rubric.md`. Its confidence table (with the >= 75 report threshold) fills `<CONFIDENCE_RUBRIC>`, and its exclusion list — extended with the PR-specific exclusions below — fills `<FALSE_POSITIVE_EXCLUSION_LIST>`:
 
-| Score | Meaning                                                |
-| ----- | ------------------------------------------------------ |
-| 0     | False positive, doesn't hold up to scrutiny            |
-| 25    | Might be real, might be false positive                 |
-| 50    | Real but minor/nitpick                                 |
-| 75    | Very likely real, important, will impact functionality |
-| 100   | Confirmed real, will happen frequently                 |
-
-**Report only issues scoring >= 75.**
-
-**False-positive exclusion list** (include in every agent prompt):
-
-- Pre-existing issues not introduced by this PR
-- Things a linter, typechecker, or compiler would catch
 - General code quality issues unless required by CLAUDE.md
 - Issues on lines the author did not modify
 - Intentional functionality changes aligned with the PR's purpose
+
+Confirmed nits count too (confidence >= 75, severity nit) — that's what feeds the 🟢 tier in step 6.
 
 ---
 
@@ -177,7 +165,7 @@ Focus areas:
 - Race conditions: concurrent state updates, stale closures in React hooks
 - Edge cases: empty arrays, missing object keys, boundary values
 - Type mismatches: wrong prop types, incorrect generics
-- State management: Redux action/reducer mismatches, missing saga handling
+- State management: mismatched actions/reducers/effects in whatever state library the touched code uses
 - React pitfalls: missing useEffect deps, incorrect key props, stale state in callbacks
 
 For each potential issue, READ the surrounding code in the file (not just the diff hunk)
@@ -207,10 +195,10 @@ start with the repo root CLAUDE.md, then check each affected app/package directo
 Also read code comments (TODOs, NOTEs, warnings, @see) in modified files.
 
 Focus areas:
-- CLAUDE.md violations: styling rules (PandaCSS vs Styled Components), import conventions,
-  testing requirements, package manager rules
-- New Styled Components usage where PandaCSS should be used
-- Imports using `src/` prefix (should use module path directly)
+- CLAUDE.md violations: styling rules, import conventions, testing requirements,
+  package manager rules — apply the rules the touched CLAUDE.md files actually state
+- Styling that violates the styling approach the touched CLAUDE.md files mandate
+- Import paths that violate the conventions in the touched CLAUDE.md files
 - Code comment compliance: does the change violate guidance in existing inline comments?
 - Naming conventions inconsistent with surrounding code
 
@@ -354,11 +342,19 @@ If yes, compose a review body from the findings formatted as clean markdown, the
 # Approve
 gh pr review $PR_NUMBER --approve --body "<REVIEW_BODY>"
 
-# Approve with nits (submit as comment, not formal approve, so author sees the nits)
-gh pr review $PR_NUMBER --comment --body "<REVIEW_BODY>"
+# Approve with nits — approve formally, with the nits in the body so the author sees them
+gh pr review $PR_NUMBER --approve --body "<REVIEW_BODY>"
 
 # Request changes
 gh pr review $PR_NUMBER --request-changes --body "<REVIEW_BODY>"
 ```
 
 Let the user adjust the verdict or edit the body before submission. After submitting, print the PR URL for confirmation.
+
+### 9. PR link (always last)
+
+Regardless of whether a review was submitted, the **final line of your response** must always be a clickable link to the reviewed PR, formatted as:
+
+`[#<PR_NUMBER> — <TITLE>](https://github.com/$GH_ORG/$GH_REPO/pull/<PR_NUMBER>)`
+
+Print nothing after it — it must be the last row so the user can click straight through to the PR.

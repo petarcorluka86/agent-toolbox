@@ -11,6 +11,8 @@ The optimization target is **usefulness per eager token**, not file size. Cuttin
 
 These are properties of how Claude Code actually loads context. Get them wrong and the "optimization" is fake.
 
+**Verified against Claude Code docs as of 2026-07.** These rules rot like any other doc: if current Claude Code behavior or docs contradict one (e.g. native `AGENTS.md` support lands, import semantics change), trust the live docs, flag the discrepancy to the user, and adjust the audit accordingly.
+
 - **Eager context is the budget.** Root `CLAUDE.md`, `CLAUDE.local.md`, and `.claude/rules/` files **without** `paths:` frontmatter load in full at launch, every session, relevant or not. That is the number worth shrinking. Anthropic's guidance: keep a `CLAUDE.md` **under ~200 lines** — longer files not only cost tokens, they *reduce adherence*, so an agent follows a bloated file less reliably than a tight one.
 - **`@imports` do not save tokens.** A `@path/to/file.md` in a `CLAUDE.md` is expanded at launch (up to 4 hops deep). Splitting a 600-line `CLAUDE.md` into five imported files reorganizes it and saves **nothing**. Never propose imports as a token fix.
 - **There are exactly three ways to make context lazy:**
