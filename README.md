@@ -19,15 +19,14 @@ Commands source `commands/.env` at runtime — no shell configuration needed.
 
 Only the **GitHub** vars are required. **YouTrack** and the **staging link** are optional: leave them blank and the commands skip those steps — `ad-hoc-pr` opens a plain PR with no ticket, and `review-pr` doesn't look for linked tickets. Fill them in later to switch the integration on; nothing else needs to change. `scripts/config-status.sh` prints what's currently on.
 
-**2. Install.** Symlink the commands into Claude Code so they show up as slash commands:
+**2. Install.** Symlink the whole `commands/` dir into Claude Code so the files show up as slash commands — new commands then appear automatically:
 
 ```bash
-mkdir -p ~/.claude/commands
-for f in ~/RemoteConfig/agent-toolbox/commands/*.md; do
-  ln -sfn "$f" ~/.claude/commands/"$(basename "$f")"
-done
+ln -sfn ~/RemoteConfig/agent-toolbox/commands ~/.claude/commands
 chmod +x commands/scripts/*.sh
 ```
+
+⚠️ Never symlink individual command files on top of this — `ln` resolves through the dir symlink and replaces the real file with a self-referencing link.
 
 ### ⚠️ Paths
 
@@ -53,6 +52,7 @@ Command files reference the toolbox as `~/RemoteConfig/agent-toolbox/commands/..
 | **`review‑branch`** | First-principles audit of the current branch against the repo's default branch. Runs parallel agents across DRY, simplicity/performance, UX, clean code, and i18n — questioning the approach, not just hunting bugs — and ends with a ship/rethink verdict. |
 | **`iterate‑items`** | Walks through a list from the previous turn (audit findings, plan steps, review issues) one item at a time, proposing an action for each and waiting for your go-ahead before acting. |
 | **`polish‑comments`** | Reviews the comments the current branch adds vs the default branch, deletes the ones that restate what the code already says, and rewrites the useful ones to be direct and minimal. Comments only — never touches executable code or pre-existing comments. |
+| **`junior-help`** | Explains a topic, file, or concept as if to a junior dev on their first day — no assumed context, jargon defined, grounded in the actual repo, with traps and where-to-look-next. `/junior-help <topic>`. |
 | **`worktree`** | Creates a git worktree for a branch (creating the branch off the default branch if it doesn't exist), installs dependencies with the repo's package manager, and opens it in a new Cursor window with an auto-focused terminal. Run from inside the target repo: `/worktree my-branch`. |
 | **`optimize‑agent‑docs`** | Audits every file that feeds an AI agent's context (`CLAUDE.md`, `AGENTS.md`, `.claude/rules/`, `.cursorrules`, Copilot instructions…) and restructures them so agents get better guidance for fewer tokens. Verifies each documented command/path/convention against the actual repo (stale docs are worse than missing ones), cuts what the agent could read for itself, and moves subsystem rules and procedures out of always-loaded context into path-scoped rules and skills. Proposes a plan with a token before/after, then applies on approval. |
 
